@@ -1,5 +1,8 @@
+'use client';
+
 import Link from "next/link";
 import Image from "next/image";
+import NavItems from "@/components/NavItems";
 
 const Navbar = () => {
     return (
@@ -10,9 +13,7 @@ const Navbar = () => {
                 </div>
             </Link>
             <div className='flex items-center gap-8'>
-                <p>Home</p>
-                <p>Companions</p>
-                <p>My Journey</p>
+                <NavItems/>
                 <p>Sign-in</p>
             </div>
         </nav>
