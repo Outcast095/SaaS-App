@@ -8,7 +8,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
-//import {getSubjectColor} from "@/lib/utils";
+import {getSubjectColor} from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,12 +33,12 @@ const CompanionsList = ({ title, companions, classNames }: CompanionsListProps) 
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {companions?.map(({id, subject, name, topic, duration, color}) => (
+                    {companions?.map(({ id, subject, name, topic, duration }) => (
                         <TableRow key={id}>
                             <TableCell>
                                 <Link href={`/companions/${id}`}>
                                     <div className="flex items-center gap-2">
-                                        <div className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden" style={{ backgroundColor: color}}>
+                                        <div className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden" style={{ backgroundColor: getSubjectColor(subject)}}>
                                             <Image
                                                 src={`/icons/${subject}.svg`}
                                                 alt={subject}
@@ -60,7 +60,7 @@ const CompanionsList = ({ title, companions, classNames }: CompanionsListProps) 
                                 <div className="subject-badge w-fit max-md:hidden">
                                     {subject}
                                 </div>
-                                <div className="flex items-center justify-center rounded-lg w-fit p-2 md:hidden" style={{backgroundColor: "#E5D0FF"}}>
+                                <div className="flex items-center justify-center rounded-lg w-fit p-2 md:hidden" style={{backgroundColor: getSubjectColor(subject)}}>
                                     <Image
                                         src={`/icons/${subject}.svg`}
                                         alt={subject}
