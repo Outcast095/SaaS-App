@@ -1,3 +1,5 @@
+
+////Данный Middleware скопирован и предоставлен из коробки clerk
 import { clerkMiddleware } from '@clerk/nextjs/server';
 
 export default clerkMiddleware();
