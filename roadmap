@@ -10,3 +10,12 @@
 1:19:14 - создание авторизации при помощи библиотеки Clerk https://clerk.com
 1:30:35 - настройка уровней подписки с библиотекой Clerk https://clerk.com
 1:39:25 - создание и настройка базы данных supabase
+1:47:34 - подключение supabase к проекту
+
+
+
+
+Clerk (для аутентификации): https://clerk.com/
+Supabase (для бэкенда база данных и сервер): https://supabase.com/
+Stripe (для платежей): https://stripe.com/
+Vapi (для AI-агента): https://vapi.ai/
