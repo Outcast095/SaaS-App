@@ -4,42 +4,90 @@ import {auth} from "@clerk/nextjs/server";
 import {createSupabaseClient} from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
+// Экспортируем асинхронную функцию createCompanion, которая принимает объект formData с типом CreateCompanion
 export const createCompanion = async (formData: CreateCompanion) => {
+    // Получаем userId текущего пользователя через функцию auth() из Clerk и переименовываем его в author
     const { userId: author } = await auth();
+
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
 
+    // Выполняем запрос к таблице 'companions' в Supabase:
+    // - Вставляем новую запись, объединяя данные из formData и поле author (userId)
+    // - Метод .select() указывает, что нужно вернуть созданную запись
     const { data, error } = await supabase
-        .from('companions')
-        .insert({...formData, author })
-        .select();
+        .from('companions') // Этот метод указывает, с какой таблицей в базе данных Supabase ты хочешь работать.
+        .insert({ ...formData, author }) // Этот метод указывает, что нужно вставить новую запись в таблицу companions.
+        .select(); //Этот метод указывает, что после выполнения вставки нужно вернуть данные созданной записи.
 
-    if(error || !data) throw new Error(error?.message || 'Failed to create a companion');
+    // Проверяем, произошла ли ошибка при выполнении запроса или отсутствуют ли данные
+    // Если есть error или data равно null/undefined, выбрасываем исключение
+    // Используем сообщение из error.message, если оно есть, иначе общее сообщение
+    if (error || !data) throw new Error(error?.message || 'Failed to create a companion');
 
+    // Возвращаем первую (и единственную) созданную запись из массива data
     return data[0];
-}
+};
 
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Экспортируем асинхронную функцию getAllCompanions, которая принимает объект с параметрами
+// limit (по умолчанию 10), page (по умолчанию 1), subject и topic
 export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }: GetAllCompanions) => {
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
 
+    // Инициализируем запрос к таблице 'companions' с методом select() (выбираем все поля по умолчанию)
     let query = supabase.from('companions').select();
 
-    if(subject && topic) {
+    // Условие: если переданы и subject, и topic
+    if (subject && topic) {
+        // Фильтруем записи, где поле subject содержит подстроку subject (без учета регистра)
+        // И где поле topic или name содержат подстроку topic (без учета регистра)
         query = query.ilike('subject', `%${subject}%`)
-            .or(`topic.ilike.%${topic}%,name.ilike.%${topic}%`)
-    } else if(subject) {
-        query = query.ilike('subject', `%${subject}%`)
-    } else if(topic) {
-        query = query.or(`topic.ilike.%${topic}%,name.ilike.%${topic}%`)
+            // в bd supabase в таблице сompanions есть столбец subject в этом столбце ilike для поиска подстроки в поле subject (без учета регистра, %${subject}% означает "содержит subject").
+
+            //.or() объединяет два условия:
+            //topic.ilike.%${topic}% — ищет записи, где поле topic содержит подстроку topic (без учета регистра).
+            //name.ilike.%${topic}% — ищет записи, где поле name содержит подстроку topic (без учета регистра).
+            //Запись будет возвращена, если хотя бы одно из этих условий истинно.
+            .or(`topic.ilike.%${topic}%,name.ilike.%${topic}%`);
+    }
+    // Условие: если передан только subject
+    else if (subject) {
+        // Фильтруем записи, где поле subject содержит подстроку subject
+        query = query.ilike('subject', `%${subject}%`);
+    }
+    // Условие: если передан только topic
+    else if (topic) {
+        // Фильтруем записи, где поле topic или name содержат подстроку topic
+        query = query.or(`topic.ilike.%${topic}%,name.ilike.%${topic}%`);
     }
 
+    // Применяем пагинацию: выбираем диапазон записей от (page-1)*limit до page*limit-1
     query = query.range((page - 1) * limit, page * limit - 1);
 
+    // Выполняем запрос и деструктурируем результат на данные (companions) и ошибку (error)
     const { data: companions, error } = await query;
 
-    if(error) throw new Error(error.message);
+    // Если произошла ошибка, выбрасываем исключение с текстом ошибки
+    if (error) throw new Error(error.message);
 
+    // Возвращаем полученные данные (массив companions)
     return companions;
-}
+};
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 export const getCompanion = async (id: string) => {
     const supabase = createSupabaseClient();

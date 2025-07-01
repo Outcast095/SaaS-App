@@ -55,25 +55,16 @@ const CompanionForm = () => {
         },
     });
 
-    // Функция обработки отправки формы
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        try {
-            // Вызываем серверное действие для создания компаньона
-            const companion = await createCompanion(values);
+        const companion = await createCompanion(values);
 
-            // Перенаправляем на страницу созданного компаньона
-            if (companion && companion.id) {
-                redirect(`/companions/${companion.id}`);
-            } else {
-                console.error("Компаньон создан, но ID не получен");
-                redirect("/companions");
-            }
-        } catch (error) {
-            console.error("Ошибка при создании компаньона:", error);
-            // В реальном приложении здесь можно было бы показать уведомление об ошибке
-            // или обновить состояние формы, чтобы отобразить ошибку пользователю
+        if(companion) {
+            redirect(`/companions/${companion.id}`);
+        } else {
+            console.log('Failed to create a companion');
+            redirect('/');
         }
-    };
+    }
 
     // JSX для рендеринга формы
     return (
