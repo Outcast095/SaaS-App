@@ -2,8 +2,8 @@
 import { getAllCompanions } from "@/lib/actions/companion.actions";
 import CompanionCard from "@/components/ComponentCard";
 import { getSubjectColor } from "@/lib/utils";
-//import SearchInput from "@/components/SearchInput";
-//import SubjectFilter from "@/components/SubjectFilter";
+import SearchInput from "@/components/SearchInput";
+import SubjectFilter from "@/components/SubjectFilter";
 
 // Компонент принимает searchParams (параметры URL, например, ?subject=math&topic=algebra)
 const CompanionsLibrary = async ({ searchParams }: SearchParams) => {
@@ -21,8 +21,8 @@ const CompanionsLibrary = async ({ searchParams }: SearchParams) => {
             <section className="flex justify-between gap-4 max-sm:flex-col">
                 <h1>Companion Library</h1>
                 <div className="flex gap-4">
-                    {/* <SearchInput /> */}  {/* Компонент для ввода поискового запроса */}
-                    {/* <SubjectFilter /> */}  {/* Компонент для фильтрации по предмету */}
+                     <SearchInput />  {/* Компонент для ввода поискового запроса */}
+                    <SubjectFilter />   {/* Компонент для фильтрации по предмету */}
                 </div>
             </section>
             <section className="companions-grid">
