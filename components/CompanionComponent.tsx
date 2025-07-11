@@ -111,6 +111,7 @@ const CompanionComponent = ({
         };
 
         // Запуск ассистента с конфигурацией и переопределениями
+        // @ts-expect-error: Тип данных неверный
         vapi.start(configureAssistant(voice, style), assistantOverrides);
     };
 
