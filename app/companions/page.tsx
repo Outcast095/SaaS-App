@@ -1,6 +1,6 @@
 // Импортируем функцию для получения данных из Supabase и компоненты
 import { getAllCompanions } from "@/lib/actions/companion.actions";
-import CompanionCard from "@/components/ComponentCard";
+import CompanionCard from "@/components/CompanionCard";
 import { getSubjectColor } from "@/lib/utils";
 import SearchInput from "@/components/SearchInput";
 import SubjectFilter from "@/components/SubjectFilter";
