@@ -89,145 +89,292 @@ export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+// Экспортируем асинхронную функцию getCompanion, которая принимает параметр id (строка)
 export const getCompanion = async (id: string) => {
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
 
+    // Выполняем запрос к таблице 'companions' в базе данных Supabase
+    // Метод .from('companions') указывает таблицу, из которой запрашиваются данные
+    // Метод .select() без параметров выбирает все поля из таблицы
+    // Метод .eq('id', id) фильтрует записи, возвращая только те, где поле 'id' равно переданному параметру id
     const { data, error } = await supabase
         .from('companions')
         .select()
         .eq('id', id);
 
-    if(error) return console.log(error);
+    // Если произошла ошибка при выполнении запроса, выводим её в консоль и завершаем выполнение
+    if (error) return console.log(error);
 
+    // Возвращаем первую запись из массива данных (data[0]), так как предполагается, что id уникален
     return data[0];
-}
+};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+// Экспортируем асинхронную функцию addToSessionHistory, которая принимает параметр companionId (строка)
 export const addToSessionHistory = async (companionId: string) => {
+    // Получаем userId из функции auth() (предположительно, функция аутентификации, возвращающая данные пользователя)
     const { userId } = await auth();
+
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
+
+    // Выполняем запрос к таблице 'session_history' в базе данных Supabase
+    // Метод .insert() добавляет новую запись в таблицу
     const { data, error } = await supabase.from('session_history')
         .insert({
-            companion_id: companionId,
-            user_id: userId,
-        })
+            companion_id: companionId, // Поле companion_id заполняется переданным параметром companionId
+            user_id: userId,         // Поле user_id заполняется полученным userId из auth()
+        });
 
-    if(error) throw new Error(error.message);
+    // Если произошла ошибка при выполнении запроса, выбрасываем исключение с текстом ошибки
+    if (error) throw new Error(error.message);
 
+    // Возвращаем данные, полученные после успешной вставки записи
     return data;
-}
+};
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Экспортируем асинхронную функцию getRecentSessions, которая принимает необязательный параметр limit (по умолчанию 10)
 export const getRecentSessions = async (limit = 10) => {
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
+
+    // Выполняем запрос к таблице 'session_history' в базе данных Supabase
+    // Метод .from('session_history') указывает таблицу, из которой запрашиваются данные
+    // Метод .select(`companions:companion_id (*)`) выбирает данные из связанной таблицы (по полю companion_id),
+    // где companions — это псевдоним для связанных данных, а (*) означает выбор всех полей из связанной таблицы
+    // Метод .order('created_at', { ascending: false }) сортирует результаты по полю created_at в порядке убывания (от новых к старым)
+    // Метод .limit(limit) ограничивает количество возвращаемых записей значением, указанным в параметре limit
     const { data, error } = await supabase
         .from('session_history')
         .select(`companions:companion_id (*)`)
         .order('created_at', { ascending: false })
-        .limit(limit)
+        .limit(limit);
 
-    if(error) throw new Error(error.message);
+    // Если произошла ошибка при выполнении запроса, выбрасываем исключение с текстом ошибки
+    if (error) throw new Error(error.message);
 
+    // Преобразуем полученные данные: из каждой записи извлекаем только поле companions
+    // Метод .map(({ companions }) => companions) возвращает массив, содержащий только данные компаньонов
     return data.map(({ companions }) => companions);
-}
+};
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// Экспортируем асинхронную функцию getUserSessions, которая принимает два параметра:
+// userId (строка, идентификатор пользователя) и limit (число, по умолчанию 10)
 export const getUserSessions = async (userId: string, limit = 10) => {
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
+
+    // Выполняем запрос к таблице 'session_history' в базе данных Supabase
+    // Метод .from('session_history') указывает таблицу, из которой запрашиваются данные
+    // Метод .select(`companions:companion_id (*)`) выбирает данные из связанной таблицы (по полю companion_id),
+    // где companions — это псевдоним для связанных данных, а (*) означает выбор всех полей из связанной таблицы
+    // Метод .eq('user_id', userId) фильтрует записи, возвращая только те, где поле user_id равно переданному userId
+    // Метод .order('created_at', { ascending: false }) сортирует результаты по полю created_at в порядке убывания (от новых к старым)
+    // Метод .limit(limit) ограничивает количество возвращаемых записей значением, указанным в параметре limit
     const { data, error } = await supabase
         .from('session_history')
         .select(`companions:companion_id (*)`)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(limit)
+        .limit(limit);
 
-    if(error) throw new Error(error.message);
+    // Если произошла ошибка при выполнении запроса, выбрасываем исключение с текстом ошибки
+    if (error) throw new Error(error.message);
 
+    // Преобразуем полученные данные: из каждой записи извлекаем только поле companions
+    // Метод .map(({ companions }) => companions) возвращает массив, содержащий только данные компаньонов
     return data.map(({ companions }) => companions);
-}
+};
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// Экспортируем асинхронную функцию getUserCompanions, которая принимает параметр userId (строка)
 export const getUserCompanions = async (userId: string) => {
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
+
+    // Выполняем запрос к таблице 'companions' в базе данных Supabase
+    // Метод .from('companions') указывает таблицу, из которой запрашиваются данные
+    // Метод .select() без параметров выбирает все поля из таблицы
+    // Метод .eq('author', userId) фильтрует записи, возвращая только те, где поле 'author' равно переданному userId
     const { data, error } = await supabase
         .from('companions')
         .select()
-        .eq('author', userId)
+        .eq('author', userId);
 
-    if(error) throw new Error(error.message);
+    // Если произошла ошибка при выполнении запроса, выбрасываем исключение с текстом ошибки
+    if (error) throw new Error(error.message);
 
+    // Возвращаем полученные данные (массив записей из таблицы 'companions')
     return data;
-}
+};
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Экспортируем асинхронную функцию newCompanionPermissions без параметров
 export const newCompanionPermissions = async () => {
+    // Получаем userId и функцию has из функции auth()
+    // Предположительно, auth() возвращает объект с userId (идентификатор пользователя)
+    // и has (функция для проверки прав доступа или подписки пользователя)
     const { userId, has } = await auth();
+
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
 
+    // Инициализируем переменную limit для ограничения количества компаньонов
     let limit = 0;
 
-    if(has({ plan: 'pro' })) {
+    // Проверяем, имеет ли пользователь подписку уровня 'pro'
+    // Если да, возвращаем true (без ограничений на создание компаньонов)
+    if (has({ plan: 'pro' })) {
         return true;
-    } else if(has({ feature: "3_companion_limit" })) {
+        // Если у пользователя есть право на создание до 3 компаньонов
+    } else if (has({ feature: "3_companion_limit" })) {
         limit = 3;
-    } else if(has({ feature: "10_companion_limit" })) {
+        // Если у пользователя есть право на создание до 10 компаньонов
+    } else if (has({ feature: "10_companion_limit" })) {
         limit = 10;
     }
 
+    // Выполняем запрос к таблице 'companions' в базе данных Supabase
+    // Метод .from('companions') указывает таблицу
+    // Метод .select('id', { count: 'exact' }) выбирает только поле id и запрашивает точное количество записей
+    // Метод .eq('author', userId) фильтрует записи, где поле author равно userId
     const { data, error } = await supabase
         .from('companions')
         .select('id', { count: 'exact' })
-        .eq('author', userId)
+        .eq('author', userId);
 
-    if(error) throw new Error(error.message);
+    // Если произошла ошибка при выполнении запроса, выбрасываем исключение с текстом ошибки
+    if (error) throw new Error(error.message);
 
+    // Получаем количество компаньонов, созданных пользователем
     const companionCount = data?.length;
 
-    if(companionCount >= limit) {
-        return false
+    // Проверяем, достиг ли пользователь лимита на создание компаньонов
+    // Если текущее количество компаньонов больше или равно лимиту, возвращаем false
+    if (companionCount >= limit) {
+        return false;
+        // Если лимит не достигнут, возвращаем true (пользователь может создать нового компаньона)
     } else {
         return true;
     }
-}
+};
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Экспортируем асинхронную функцию addBookmark, которая принимает два параметра:
+// companionId (строка, идентификатор компаньона) и path (строка, путь для инвалидации кэша)
 export const addBookmark = async (companionId: string, path: string) => {
+    // Получаем userId из функции auth() (предположительно, функция аутентификации, возвращающая данные пользователя)
     const { userId } = await auth();
+
+    // Если userId отсутствует (пользователь не аутентифицирован), функция завершает выполнение
     if (!userId) return;
+
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
+
+    // Выполняем запрос к таблице 'bookmarks' в базе данных Supabase
+    // Метод .from("bookmarks") указывает таблицу, в которую будут добавлены данные
+    // Метод .insert() добавляет новую запись с полями companion_id и user_id
+    // companion_id: значение переданного параметра companionId
+    // user_id: значение userId, полученное из auth()
     const { data, error } = await supabase.from("bookmarks").insert({
         companion_id: companionId,
         user_id: userId,
     });
+
+    // Если произошла ошибка при выполнении запроса, выбрасываем исключение с текстом ошибки
     if (error) {
         throw new Error(error.message);
     }
-    // Revalidate the path to force a re-render of the page
 
+    // Вызываем функцию revalidatePath для инвалидации кэша страницы, указанной в параметре path
+    // Это обновляет данные на странице, чтобы отразить добавление новой закладки (используется в Next.js)
     revalidatePath(path);
+
+    // Возвращаем данные, полученные после вставки (обычно это массив вставленных записей)
     return data;
 };
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Экспортируем асинхронную функцию removeBookmark, которая принимает два параметра:
+// companionId (строка, идентификатор компаньона) и path (строка, путь для инвалидации кэша)
 export const removeBookmark = async (companionId: string, path: string) => {
+    // Получаем userId из функции auth() (предположительно, функция аутентификации, возвращающая данные пользователя)
     const { userId } = await auth();
+
+    // Если userId отсутствует (пользователь не аутентифицирован), функция завершает выполнение
     if (!userId) return;
+
+    // Создаем клиент Supabase для взаимодействия с базой данных
     const supabase = createSupabaseClient();
+
+    // Выполняем запрос к таблице 'bookmarks' в базе данных Supabase
+    // Метод .delete() указывает, что нужно удалить записи
+    // Метод .eq("companion_id", companionId) фильтрует записи, где поле companion_id равно переданному companionId
+    // Метод .eq("user_id", userId) дополнительно фильтрует записи, где поле user_id равно userId
+    // Это обеспечивает удаление только той закладки, которая принадлежит текущему пользователю и связана с указанным компаньоном
     const { data, error } = await supabase
         .from("bookmarks")
         .delete()
         .eq("companion_id", companionId)
         .eq("user_id", userId);
+
+    // Если произошла ошибка при выполнении запроса, выбрасываем исключение с текстом ошибки
     if (error) {
         throw new Error(error.message);
     }
+
+    // Вызываем функцию revalidatePath для инвалидации кэша страницы, указанной в параметре path
+    // Это обновляет данные на странице, чтобы отразить удаление закладки (используется в Next.js)
     revalidatePath(path);
+
+    // Возвращаем данные, полученные после удаления (обычно это массив удаленных записей или null)
     return data;
 };
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// It's almost the same as getUserCompanions, but it's for the bookmarked companions
 export const getBookmarkedCompanions = async (userId: string) => {
     const supabase = createSupabaseClient();
     const { data, error } = await supabase
         .from("bookmarks")
         .select(`companions:companion_id (*)`) // Notice the (*) to get all the companion data
         .eq("user_id", userId);
+
+
     if (error) {
         throw new Error(error.message);
     }
