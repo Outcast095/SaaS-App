@@ -33,7 +33,7 @@ import CompanionsList from "@/components/CompanionsList";
 
 
 
-// Определяем асинхронный серверный компонент Profile
+// страница My Journey
 const Profile = async () => {
     // Получаем данные текущего пользователя через Clerk
     const user = await currentUser();

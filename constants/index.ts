@@ -7,6 +7,7 @@ export const subjects = [
   "economics",
 ];
 
+// объект содержит набор цветов для предметов
 export const subjectsColors = {
   science: "#E5D0FF",
   maths: "#FFDA6E",

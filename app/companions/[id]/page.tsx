@@ -11,13 +11,14 @@ interface CompanionSessionPageProps {
 }
 
 const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
-    const { id } = await params;
-    const companion = await getCompanion(id);
-    const user = await currentUser();
+    const { id } = await params; //получение параметров из строки qery
+
+    const companion = await getCompanion(id);  //получение информации о конкретном пользователе
+    const user = await currentUser();//получение информации о том был ли пользователь авторизован
 
     const { name, subject, title, topic, duration } = companion;
 
-    if(!user) redirect('/sign-in');
+    if(!user) redirect('/sign-in'); //если пользователь не авторизован перенаправить его на страницу авторизации
     if(!name) redirect('/companions')
 
     return (
